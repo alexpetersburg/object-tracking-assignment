@@ -37,3 +37,8 @@ from track_n import track_data, country_balls_amount
 **tracks_amount**: количество объектов  
 **random_range**: на сколько пикселей рамка объектов может ложно смещаться (эмуляция не идеальной детекции)  
 **bb_skip_percent**: с какой вероятностью объект на фрейме может быть не найдет детектором  
+
+# Report
+### References
+* [SORT](https://github.com/abewley/sort)
+* [Deep SORT](https://github.com/nwojke/deep_sort)

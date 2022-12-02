@@ -2,6 +2,19 @@ from fastapi import FastAPI, WebSocket
 from track_3 import track_data, country_balls_amount
 import asyncio
 import glob
+from sort.tracker import Sort
+import numpy as np
+
+sort_tracker = Sort(max_age=3, min_hits=1, iou_threshold=0.3)
+
+if __name__ == '__main__':
+    for el in track_data[:5]:
+        dets = np.array(list([[*det['bounding_box'], 1, i] for i, det in enumerate(el['data']) if det['bounding_box']]))
+        tracked_dets = sort_tracker.update(dets)
+        for track in tracked_dets:
+            el['data'][track[-1]]['track_id'] = int(track[-2])
+    print(el)
+    exit()
 
 app = FastAPI(title='Tracker assignment')
 imgs = glob.glob('imgs/*')
@@ -24,6 +37,11 @@ def tracker_soft(el):
     вашего трекера, использовать его в алгоритме трекера запрещено
     - запрещается присваивать один и тот же track_id разным объектам на одном фрейме
     """
+    dets = list([[*det['bounding_box'], 1, i] for i, det in enumerate(el['data']) if det['bounding_box']])
+    if dets:
+        tracked_dets = sort_tracker.update(np.array(dets))
+        for track in tracked_dets:
+            el['data'][int(track[-1])]['track_id'] = int(track[-2])
     return el
 
 
@@ -66,4 +84,5 @@ async def websocket_endpoint(websocket: WebSocket):
         # el = tracker_strong(el)
         # отправка информации по фрейму
         await websocket.send_json(el)
+    sort_tracker.reset()
     print('Bye..')
